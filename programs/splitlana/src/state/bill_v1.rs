@@ -5,8 +5,8 @@ pub struct BillV1 {
     pub author: Pubkey,
     pub name: String,
     pub payers: Vec<Payers>,
-    pub amount: u32,
-    pub paid: u32,
+    pub amount: u64,
+    pub paid: u64,
     pub currency: Currency,
     pub bump: u8,
 }
