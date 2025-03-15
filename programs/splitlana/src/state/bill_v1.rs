@@ -8,9 +8,10 @@ pub struct BillV1 {
     pub amount: u32,
     pub paid: u32,
     pub currency: Currency,
+    pub bump: u8,
 }
 impl Space for BillV1 {
-    const INIT_SPACE: usize = 8 + 32 + ((4 + (32 + 4 + 1)) * 10) + (4 + 10) + 4 + 4 + 1;
+    const INIT_SPACE: usize = 8 + 32 + ((4 + (32 + 4 + 1)) * 10) + (4 + 10) + 4 + 4 + 1 + 1;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, PartialEq, Debug)]

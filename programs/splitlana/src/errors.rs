@@ -5,4 +5,7 @@ use solana_program::msg;
 pub enum SplitError {
     #[msg("Token Program Not Provided")]
     TokenProgramNotProvided,
+
+    #[msg("Payer Not In List")]
+    PayerNotInList
 }
