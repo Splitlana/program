@@ -26,7 +26,11 @@ impl<'info> PayBill<'info> {
         let amount_to_pay = self.bill.amount / self.bill.payers.len() as u64;
 
         //check that payer exists in payers list
-        require!(self.bill.payers.iter().find(|payer| payer.payer == *self.payer.key).is_some(), SplitError::PayerNotInList);
+        let mut payers = self.bill.payers.clone();
+        let payer = payers.iter_mut().find(|payer| payer.payer == *self.payer.key);
+        if payer.is_none() {
+            return Err(SplitError::PayerNotInList.into());
+        }
 
         //check the currency of the bill and use appropriate program to transfer funds
         match self.bill.currency {
@@ -66,7 +70,7 @@ impl<'info> PayBill<'info> {
 
         //update bill state (paid amount, payer list)
         self.bill.paid += amount_to_pay;
-        self.bill.payers.iter_mut().find(|payer| payer.payer == *self.payer.key).unwrap().paid = true;
+        payer.unwrap().paid = true;
 
         Ok(())
     }
