@@ -5,19 +5,18 @@ mod state;
 mod errors;
 
 use instructions::*;
+use state::*;
 
 
 declare_id!("5rzxbeLJoSWGw1oDqDBhtDsS3ETgtQpGoNVCNVKUHNmp");
 
 #[program]
 pub mod splitlana {
+    use crate::state::Currency;
+
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        msg!("Greetings from: {:?}", ctx.program_id);
-        Ok(())
+    pub fn init_bill(ctx: Context<InitBill>, _seed: u64, amount: u64, name: String, currency: Currency) -> Result<()> {
+        ctx.accounts.init_bill(_seed, amount, name, currency, &ctx.bumps)
     }
 }
-
-#[derive(Accounts)]
-pub struct Initialize {}
