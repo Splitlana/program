@@ -25,25 +25,21 @@ impl<'info> PayBill<'info> {
         //check the currency of the bill and use appropriate program to transfer funds
         match self.bill.currency {
             Currency::USDC => {
-                require!(self.token_program.is_some(), SplitError::TokenProgramNotProvided);
-                require!(self.payer_token_account.is_some(), SplitError::TokenAccountNotProvided);
-                
-                let token_program = self.token_program.clone().unwrap();
-                let token_account = self.payer_token_account.clone().unwrap();
+                if let (Some(token_program), Some(token_account)) = (self.token_program.clone(), self.payer_token_account.clone()) {
+                    let cpi_accounts = Transfer {
+                        from: token_account.to_account_info(),
+                        to: self.author_token_account.unwrap().to_account_info(),
+                        authority: self.payer.to_account_info(),
+                    };
 
-                let cpi_accounts = Transfer {
-                    from: token_account.to_account_info(),
-                    to: self.author_token_account.unwrap().to_account_info(),
-                    authority: self.payer.to_account_info(),
-                };
+                    let cpi_ctx = CpiContext::new(token_program.to_account_info(), cpi_accounts);
 
-                let cpi_ctx = CpiContext::new(token_program.to_account_info(), cpi_accounts);
-
-                transfer(cpi_ctx, amount_to_pay)?;
-
+                    transfer(cpi_ctx, amount_to_pay)?;
+                } else {
+                    return Err(SplitError::TokenProgramNotProvided.into());
+                }
             }
             Currency::SOL => {
-                require!(self)
                 let system_program = self.system_program.clone().unwrap();
                 let sol_account = self.sol_account.clone().unwrap();
             }
