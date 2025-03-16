@@ -8,7 +8,7 @@ use instructions::*;
 use state::*;
 
 
-declare_id!("5rzxbeLJoSWGw1oDqDBhtDsS3ETgtQpGoNVCNVKUHNmp");
+declare_id!("3hh4gu66UferQzEDHi6enwvVptv8JTQm3U2MHPM2PPpj");
 
 #[program]
 pub mod splitlana {
