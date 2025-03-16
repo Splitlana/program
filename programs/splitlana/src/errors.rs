@@ -3,11 +3,8 @@ use solana_program::msg;
 
 #[error_code]
 pub enum SplitError {
-    #[msg("Token Program Not Provided")]
-    TokenProgramNotProvided,
-
-    #[msg("Token Account Not Provided")]
-    TokenAccountNotProvided,
+    #[msg("Accounts provided are not valid")]
+    InvalidAccounts,
 
     #[msg("Payer Not In List")]
     PayerNotInList

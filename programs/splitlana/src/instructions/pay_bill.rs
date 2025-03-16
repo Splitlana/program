@@ -1,5 +1,11 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Token, TokenAccount, Transfer, transfer};
+use anchor_spl::token::{
+        Token, 
+        TokenAccount, 
+        Transfer as SplTransfer, 
+        transfer as spl_transfer
+    };
+use anchor_lang::system_program::{Transfer, transfer};
 
 use crate::{errors::SplitError, state::{BillV1, Currency}};
 
@@ -25,30 +31,42 @@ impl<'info> PayBill<'info> {
         //check the currency of the bill and use appropriate program to transfer funds
         match self.bill.currency {
             Currency::USDC => {
-                if let (Some(token_program), Some(token_account)) = (self.token_program.clone(), self.payer_token_account.clone()) {
-                    let cpi_accounts = Transfer {
+                if let (Some(token_program), Some(token_account)) = (self.token_program.as_ref(), self.payer_token_account.as_ref()) {
+                    let cpi_accounts = SplTransfer {
                         from: token_account.to_account_info(),
-                        to: self.author_token_account.clone().unwrap().to_account_info(),
+                        to: self.author_token_account.as_ref().unwrap().to_account_info(),
                         authority: self.payer.to_account_info(),
                     };
 
                     let cpi_ctx = CpiContext::new(token_program.to_account_info(), cpi_accounts);
 
-                    transfer(cpi_ctx, amount_to_pay)?;
+                    // transfer funds from payer to bill
+                    spl_transfer(cpi_ctx, amount_to_pay)?;
+
                 } else {
-                    return Err(SplitError::TokenProgramNotProvided.into());
+                    return Err(SplitError::InvalidAccounts.into());
                 }
             }
             Currency::SOL => {
-                let system_program = self.system_program.clone().unwrap();
-                let sol_account = self.sol_account.clone().unwrap();
+                if let (Some(system_program), Some(author)) = (self.system_program.as_ref(), self.author.as_ref()) {
+                    let cpi_accounts = Transfer {
+                        from: self.sol_account.as_ref().unwrap().to_account_info(),
+                        to: author.to_account_info(),
+                    };
+
+                    let cpi_ctx = CpiContext::new(system_program.to_account_info(), cpi_accounts);
+
+                    // transfer funds from payer to bill
+                    transfer(cpi_ctx, amount_to_pay)?;
+                } else {
+                    return Err(SplitError::InvalidAccounts.into());
+                }
             }
-        }
-
-
-        //transfer funds from payer to bill
+        };
 
         //update bill state (paid amount, payer list)
+        self.bill.paid += amount_to_pay;
+        self.bill.payers.iter_mut().find(|payer| payer.payer == *self.payer.key).unwrap().paid = true;
 
         Ok(())
     }
