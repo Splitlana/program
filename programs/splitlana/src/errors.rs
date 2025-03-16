@@ -6,6 +6,9 @@ pub enum SplitError {
     #[msg("Token Program Not Provided")]
     TokenProgramNotProvided,
 
+    #[msg("Token Account Not Provided")]
+    TokenAccountNotProvided,
+
     #[msg("Payer Not In List")]
     PayerNotInList
 }
