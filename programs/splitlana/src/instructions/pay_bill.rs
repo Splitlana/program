@@ -28,7 +28,7 @@ impl<'info> PayBill<'info> {
                 if let (Some(token_program), Some(token_account)) = (self.token_program.clone(), self.payer_token_account.clone()) {
                     let cpi_accounts = Transfer {
                         from: token_account.to_account_info(),
-                        to: self.author_token_account.unwrap().to_account_info(),
+                        to: self.author_token_account.clone().unwrap().to_account_info(),
                         authority: self.payer.to_account_info(),
                     };
 
