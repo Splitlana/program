@@ -1,41 +1,58 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Token, TokenAccount};
+use anchor_spl::token::{Token, TokenAccount, Transfer, transfer};
 
 use crate::{errors::SplitError, state::{BillV1, Currency}};
 
 #[derive(Accounts)]
 pub struct PayBill<'info> {
     pub payer: Signer<'info>,
+    pub author: Option<SystemAccount<'info>>,
     pub bill: Account<'info, BillV1>,
     pub sol_account: Option<SystemAccount<'info>>,
-    pub token_account: Option<Account<'info, TokenAccount>>,
+    pub payer_token_account: Option<Account<'info, TokenAccount>>,
+    pub author_token_account: Option<Account<'info, TokenAccount>>,
     pub system_program: Option<Program<'info, System>>,
     pub token_program: Option<Program<'info, Token>>,
 }
 
 impl<'info> PayBill<'info> {
     pub fn pay_bill(&mut self) -> Result<()> {
-        let amout_to_pay = self.bill.amount / self.bill.payers.len() as u32;
+        let amount_to_pay = self.bill.amount / self.bill.payers.len() as u64;
 
         //check that payer exists in payers list
+        require!(self.bill.payers.iter().find(|payer| payer.payer == *self.payer.key).is_some(), SplitError::PayerNotInList);
 
         //check the currency of the bill and use appropriate program to transfer funds
-
-        //transfer funds from payer to bill
-
-        //update bill state (paid amount, payer list)
-        //Exemplo de USDC
         match self.bill.currency {
             Currency::USDC => {
                 require!(self.token_program.is_some(), SplitError::TokenProgramNotProvided);
-                let token_progranm = self.token_program.clone().unwrap();
-                let token_account = self.token_account.clone().unwrap();
+                require!(self.payer_token_account.is_some(), SplitError::TokenAccountNotProvided);
+                
+                let token_program = self.token_program.clone().unwrap();
+                let token_account = self.payer_token_account.clone().unwrap();
+
+                let cpi_accounts = Transfer {
+                    from: token_account.to_account_info(),
+                    to: self.author_token_account.unwrap().to_account_info(),
+                    authority: self.payer.to_account_info(),
+                };
+
+                let cpi_ctx = CpiContext::new(token_program.to_account_info(), cpi_accounts);
+
+                transfer(cpi_ctx, amount_to_pay)?;
+
             }
             Currency::SOL => {
+                require!(self)
                 let system_program = self.system_program.clone().unwrap();
                 let sol_account = self.sol_account.clone().unwrap();
             }
         }
+
+
+        //transfer funds from payer to bill
+
+        //update bill state (paid amount, payer list)
 
         Ok(())
     }
