@@ -6,7 +6,8 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-splitlana = "5rzxbeLJoSWGw1oDqDBhtDsS3ETgtQpGoNVCNVKUHNmp"
+splitlana = "AJz2KWMkb3QunBB69w2rDsxpAZD7NzyDDiTaPNugpBnD"
+#5rzxbeLJoSWGw1oDqDBhtDsS3ETgtQpGoNVCNVKUHNmp
 
 [programs.devnet]
 splitlana = "3hh4gu66UferQzEDHi6enwvVptv8JTQm3U2MHPM2PPpj"

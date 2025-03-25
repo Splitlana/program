@@ -23,6 +23,8 @@ pub struct PayBill<'info> {
 
 impl<'info> PayBill<'info> {
     pub fn pay_bill(&mut self) -> Result<()> {
+        //calculate amount to pay: even split among payers
+        require!(self.bill.payers.len() > 0, SplitError::PayerListEmpty);
         let amount_to_pay = self.bill.amount / self.bill.payers.len() as u64;
 
         //check that payer exists in payers list
@@ -30,6 +32,10 @@ impl<'info> PayBill<'info> {
         let payer = payers.iter_mut().find(|payer| payer.payer == *self.payer.key);
         if payer.is_none() {
             return Err(SplitError::PayerNotInList.into());
+        }
+        //check that payer has not already paid
+        if payer.as_ref().unwrap().paid {
+            return Err(SplitError::PayerAlreadyPaid.into());
         }
 
         //check the currency of the bill and use appropriate program to transfer funds

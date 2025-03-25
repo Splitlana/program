@@ -10,13 +10,54 @@ describe("splitlana", () => {
 
   const program = anchor.workspace.splitlana as Program<Splitlana>;
 
-  it("Is initialized!", async () => {
+  const payerAkeypair = anchor.web3.Keypair.generate();
+
+  const seedBill = new anchor.BN(randomBytes(8));
+  const seedBillBytes = seedBill.toArrayLike(Buffer, "le", 8);
+  const billPda = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("bill"), provider.publicKey.toBuffer(), seedBillBytes],
+    program.programId
+  )[0];
+
+  it("Initialize Bill", async () => {
     // Add your test here.
-    const seed = new anchor.BN(randomBytes(8));
-    const tx = await program.methods.initBill(seed, new anchor.BN(10), "cenas", {sol: {}}).accounts({
+    const tx = await program.methods
+    .initBill(seedBill, new anchor.BN(10), "Kill Bill", {sol: {}})
+    .accountsPartial({
       user: provider.publicKey,
+      bill: billPda,
     })
     .rpc();
     console.log(tx);
   });
+
+  it("Add payer to existing bill", async () => {
+    // Add your test here.
+    const tx = await program.methods
+    .addPayer(payerAkeypair.publicKey)
+    .accountsPartial({
+      author: provider.publicKey,
+      bill: billPda,
+    })
+    .rpc();
+    console.log(tx);
+  });
+
+  it("Pay bill", async () => {
+    // Add your test here.
+    const tx = await program.methods
+    .payBill()
+    .accountsPartial({
+      payer: payerAkeypair.publicKey,
+      author: provider.publicKey,
+      bill: billPda,
+      solAccount: provider.publicKey,
+      payerTokenAccount: null,
+      authorTokenAccount: null,      
+    })
+    .signers([payerAkeypair])
+    .rpc();
+    console.log(tx);
+  });
+
 });

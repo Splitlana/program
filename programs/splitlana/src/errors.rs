@@ -7,5 +7,15 @@ pub enum SplitError {
     InvalidAccounts,
 
     #[msg("Payer Not In List")]
-    PayerNotInList
+    PayerNotInList,
+
+    #[msg("Payer list is empty")]
+    PayerListEmpty,
+
+    #[msg("Payer already paid")]
+    PayerAlreadyPaid,
+
+    #[msg("Payer already exists")]
+    PayerAlreadyExists,
+    
 }
