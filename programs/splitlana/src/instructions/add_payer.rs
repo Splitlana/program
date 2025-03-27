@@ -14,10 +14,13 @@ pub struct AddPayer<'info> {
 
 impl<'info> AddPayer<'info> {
     pub fn add_payer(&mut self, payer: Pubkey) -> Result<()> {
+
+        //check payer is not already listed 
         if self.bill.payers.iter().any(|p| p.payer == payer ) {
             return Err(SplitError::PayerAlreadyExists.into());
         }
 
+        //add new payer to bill
         self.bill.payers.push(Payers {
             payer,
             amount: 0,

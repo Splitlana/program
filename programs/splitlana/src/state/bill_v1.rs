@@ -5,8 +5,8 @@ pub struct BillV1 {
     pub author: Pubkey,
     pub name: String,
     pub payers: Vec<Payers>,
-    pub amount: u64,
-    pub paid: u64,
+    pub total_amount: u64,
+    pub total_paid: u64,
     pub currency: Currency,
     pub bump: u8,
 }
@@ -17,7 +17,7 @@ impl Space for BillV1 {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, PartialEq, Debug)]
 pub struct Payers {
     pub payer: Pubkey,
-    pub amount: u32,
+    pub amount: u64,
     pub paid: bool,
 }
 

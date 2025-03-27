@@ -23,9 +23,9 @@ pub struct PayBill<'info> {
 
 impl<'info> PayBill<'info> {
     pub fn pay_bill(&mut self) -> Result<()> {
-        //calculate amount to pay: even split among payers
+        //calculate amount to pay: even split among payers of total amount
         require!(self.bill.payers.len() > 0, SplitError::PayerListEmpty);
-        let amount_to_pay = self.bill.amount / self.bill.payers.len() as u64;
+        let amount_to_pay = self.bill.total_amount / self.bill.payers.len() as u64;
 
         //check that payer exists in payers list
         let mut payers = self.bill.payers.clone();
@@ -50,7 +50,7 @@ impl<'info> PayBill<'info> {
 
                     let cpi_ctx = CpiContext::new(token_program.to_account_info(), cpi_accounts);
 
-                    // transfer funds from payer to bill
+                    // transfer funds from payer token account to author token account
                     spl_transfer(cpi_ctx, amount_to_pay)?;
 
                 } else {
@@ -66,7 +66,7 @@ impl<'info> PayBill<'info> {
 
                     let cpi_ctx = CpiContext::new(system_program.to_account_info(), cpi_accounts);
 
-                    // transfer funds from payer to bill
+                    // transfer funds from payer to author
                     transfer(cpi_ctx, amount_to_pay)?;
                 } else {
                     return Err(SplitError::InvalidAccounts.into());
@@ -75,8 +75,12 @@ impl<'info> PayBill<'info> {
         };
 
         //update bill state (paid amount, payer list)
-        self.bill.paid += amount_to_pay;
-        payer.unwrap().paid = true;
+        self.bill.total_paid += amount_to_pay;
+        if let Some(payer) = payer {
+            payer.paid = true;
+            payer.amount += amount_to_pay;
+        }
+        
 
         Ok(())
     }

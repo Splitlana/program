@@ -19,14 +19,14 @@ pub struct InitBill<'info> {
 }
 
 impl<'info> InitBill<'info> {
-    pub fn init_bill(&mut self, _seed: u64, amount: u64, name: String, currency: Currency, bumps: &InitBillBumps) -> Result<()> {
+    pub fn init_bill(&mut self, _seed: u64, total_amount: u64, name: String, currency: Currency, bumps: &InitBillBumps) -> Result<()> {
         self.bill.set_inner({
             BillV1 {
                 author: self.user.key(),
                 name,
                 payers: vec![],
-                paid: 0,
-                amount,
+                total_paid: 0,
+                total_amount,
                 currency,
                 bump: bumps.bill,
             }
